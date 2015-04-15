@@ -1,69 +1,41 @@
+/**
+ * A minifier browserify transform using {@link https://github.com/estools/esmangle|esmangle}.
+ */
 'use strict';
-var path            = require('path');
 
-var gulp            = require('gulp'),
-    runSequence     = require('run-sequence'),
-    pluginRegistry  = require('plugin-registry');
+var merge        = require('lodash.merge'),
+    esmangle     = require('esmangle'),
+    esprimaTools = require('browserify-esprima-tools');
 
-var taskYargsRun    = require('./lib/util/task-yargs-run');
+/**
+ * Esprima based minifier transform for Browserify.
+ * Options are per the {@link https://github.com/estools/escodegen/wiki/API|escodegen} format.
+ * @param {object} opt An options hash
+ */
+function esmangleify(opt) {
 
-var defaultTaskPlugins = [
-  'html',
-  'css',
-  'javascript',
-  'test',
-  'build',
-  'release',
-  'server',
-  'watch',
-  'init',
-  'webstorm'
-].map(function parseDefaultPluginDefinition(taskName) {
-  return {
-    name: taskName,
-    requirePath: path.resolve(__dirname, 'tasks', taskName),
-    category: 'task',
-    isDefault: true
-  };
-});
+  // options is the escodegen format
+  var format = merge({
+    renumber   : true,
+    hexadecimal: true,
+    escapeless : true,
+    compact    : true,
+    semicolons : false,
+    parentheses: false
+  }, opt);
 
-var angularityJson;
-try {
-  angularityJson = require(path.resolve('angularity.json'));
-}
-catch (ex) {
-  // Do nothing
-}
-var configTaskPlugins = (angularityJson && angularityJson.plugins) || [];
-if (configTaskPlugins.constructor !== Array) {
-  throw new Error('Plugins defined in angularity.json should be an array');
+  // transform
+  return esprimaTools.createTransform(updater, format);
 }
 
-var pluginContext = {
-  toolPath: __dirname
-};
+/**
+ * The updater function for the esprima transform
+ * @param {string} file The filename for the Browserify transform
+ * @param {object} ast The esprima syntax tree
+ * @returns {object} The mangled esprima syntax tree
+ */
+function updater(file, ast) {
+  return esmangle.mangle(ast);
+}
 
-pluginRegistry
-  .get('angularity')
-  .context(pluginContext)
-  .add(defaultTaskPlugins)
-  .add(configTaskPlugins);
-
-pluginRegistry
-  .get('angularity')
-  .getAllOfCategory('task')
-  .forEach(function eachTaskPlugin(definition) {
-    var plugin = definition.plugin;
-
-    // Task plugins are expected to export a function which should be called with an instance of taskYargsRun
-    if (typeof plugin !== 'function') {
-      throw new Error('Plugin named ' + definition.name + ' does not export a function');
-    }
-
-    var taskDefinition = plugin({
-      taskYargsRun: taskYargsRun,
-      gulp: gulp,
-      runSequence: runSequence
-    });
-    taskYargsRun.taskYargs.register(taskDefinition);
-  });
+module.exports = esmangleify;
