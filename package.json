@@ -1,6 +1,6 @@
 {
   "name": "esmangleify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A minifier browserify transform using esmangle",
   "main": "index.js",
   "scripts": {},
