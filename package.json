@@ -1,6 +1,6 @@
 {
   "name": "esmangleify",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A minifier browserify transform using esmangle",
   "main": "index.js",
   "scripts": {},
@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/bholloway/esmangleify",
   "dependencies": {
-    "browserify-esprima-tools": "latest",
-    "esmangle": "latest",
-    "lodash.merge": "latest"
+    "browserify-esprima-tools": "^1.1.0",
+    "esmangle": "^1.0.1",
+    "lodash.merge": "*"
   }
 }
