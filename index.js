@@ -14,18 +14,24 @@ var merge        = require('lodash.merge'),
  */
 function esmangleify(opt) {
 
-  // options is the escodegen format
-  var format = merge({
+  // options is mostly the escodegen format
+  var format = {
     renumber   : true,
     hexadecimal: true,
     escapeless : true,
     compact    : true,
     semicolons : false,
     parentheses: false
+  }
+
+  // fail silently allows us to process json (and other non js) files that make it through the transform process
+  //  alternatively you could implement a options.filter
+  var options = merge(format, {
+    failSilently: true
   }, opt);
 
   // transform
-  return esprimaTools.createTransform(updater, format);
+  return esprimaTools.createTransform(updater, options);
 }
 
 /**
